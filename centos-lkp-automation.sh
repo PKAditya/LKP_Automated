@@ -278,15 +278,26 @@ filename="$loc/lkp-tests/programs/hackbench/pkg/PKGBUILD"
 line_number=10
 new_text='source=("https://www.kernel.org/pub/linux/utils/rt-tests/older/rt-tests-${pkgver}.tar.gz")'
 sed -i "${line_number}s|.*|${new_text}|" "${filename}"
+linu=2
+new_line2='pkgver=2.6'
+sed -i "${linu}s|.*|${new_line2}|" "${filename}"
 check_exit
 line_number1=5
 new_text1='url="https://www.kernel.org/pub/linux/utils/rt-tests/older"'
 sed -i "${line_number1}s|.*|${new_text1}|" "${filename}"
 check_exit
+
+
 fn="$loc/lkp-tests/programs/rt-tests/pkg/PKGBUILD"
 ln=8
 n_t='source=("https://www.kernel.org/pub/linux/utils/rt-tests/older/rt-tests-$pkgver.tar.gz")'
 sed -i "${ln}s|.*|${n_t}|" "${fn}"
+linu2=2
+new_line2='pkgver=2.6'
+sed -i "${linu2}s|.*|${new_line2}|" "${fn}"
+lnt=9
+nl9="md5sums=('SKIP')"
+sed -i "${lnt}s|.*|${nl9}|" "${fn}"
 check_exit
 echo " "
 
