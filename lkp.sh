@@ -12,6 +12,9 @@ get_last_completed() {
 
 # Function to run tests
 run_tests() {
+    rm -rf /lkp/result/hackbench/*
+    rm -rf /lkp/result/ebizzy/*
+    rm -rf /lkp/result/unixbnech/*
     local last_completed=$(get_last_completed)
     local start_index=0
 
