@@ -18,18 +18,31 @@ sleep 2
 echo "DISTRO FOUND: $distro"
 echo "CURRENT USER: $user"
 echo " "
-if [ "$distro" == "ubuntu" ]; then
+if command -v apt > /dev/null 2>&1; then
+  echo "---------------------------"
+  echo "Detected Debian based system."
+  echo "---------------------------"
+  echo ""
+
   if [ "$user" == "amd" ]; then
 	  echo 'Amd$1234!' | sudo -S $loc/ubuntu-lkp-automation.sh $user
   else
 	  sudo $loc/ubuntu-lkp-automation.sh $user
   fi
-else
+elif command -v dnf >/dev/null 2>&1 || command -v yum >/dev/null 2>&1; then
+  echo "---------------------------"
+  echo "Detected RHEL based system."
+  echo "---------------------------"
+  echo ""
   if [ "$user" == "amd" ]; then
 	  echo 'Amd$1234!' |  sudo -S $loc/centos-lkp-automation.sh $user
   else
 	  sudo $loc/centos-lkp-automation.sh $user
   fi
+
+else
+  echo "---------------------------"
+  echo "Unsupported system"
 fi
 
 
