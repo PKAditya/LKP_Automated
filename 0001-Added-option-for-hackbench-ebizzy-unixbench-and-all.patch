@@ -1,0 +1,121 @@
+From bde88e2ae1e36437c7042c160031718e3f423bb3 Mon Sep 17 00:00:00 2001
+From: suryasaimadhu <suryasaimadhu369@gmail.com>
+Date: Mon, 27 Jan 2025 14:58:12 +0530
+Subject: [PATCH] Added option for hackbench, ebizzy, unixbench and all
+
+---
+ centos-lkp-automation.sh | 84 +++++++++++++++++++++++++++++++++-------
+ 1 file changed, 70 insertions(+), 14 deletions(-)
+
+diff --git a/centos-lkp-automation.sh b/centos-lkp-automation.sh
+index 5ee3a99..9d33ae0 100755
+--- a/centos-lkp-automation.sh
++++ b/centos-lkp-automation.sh
+@@ -19,8 +19,6 @@ echo " "
+ servi="yes"
+ 
+ 
+-
+-
+ echo " "
+ echo "============================================"
+ echo "Installing all required dependencies for LKP"
+@@ -454,25 +452,83 @@ echo "            break" >> lkp.sh
+ echo "        fi" >> lkp.sh
+ echo "    done" >> lkp.sh
+ echo "" >> lkp.sh
+-echo "    # Run tests starting from where it left off" >> lkp.sh
++echo "    # Run tests based on the argument" >> lkp.sh
+ echo "    for (( i = start_index; i < \${#test_cases[@]}; i++ )); do" >> lkp.sh
+-echo "        echo \"Running: \${test_cases[\$i]}\"" >> lkp.sh
+-echo "        \${test_cases[\$i]}" >> lkp.sh
+-#echo "        lkp run \"\${test_cases[\$i]}\"" >> lkp.sh
+-echo "        if [ \$? -eq 0 ]; then" >> lkp.sh
+-echo "            echo \"\${test_cases[\$i]}\" > \"\$STATE_FILE\"" >> lkp.sh
+-echo "        else" >> lkp.sh
+-echo "            echo \"Test failed, stopping execution.\"" >> lkp.sh
+-echo "            exit 1" >> lkp.sh
+-echo "        fi" >> lkp.sh
+-#echo "        echo \"\${test_cases[\$i]}\" > \"\$STATE_FILE\"" >> lkp.sh
++echo "        case \$1 in" >> lkp.sh
++echo "            1)" >> lkp.sh
++echo "                if [[ \"\${test_cases[\$i]}\" == *\"hackbench\"* ]]; then" >> lkp.sh
++echo "                    echo \"Running: \${test_cases[\$i]}\"" >> lkp.sh
++echo "                    \${test_cases[\$i]}" >> lkp.sh
++echo "                    if [ \$? -eq 0 ]; then" >> lkp.sh
++echo "                        echo \"\${test_cases[\$i]}\" > \"\$STATE_FILE\"" >> lkp.sh
++echo "                    else" >> lkp.sh
++echo "                        echo \"Test failed, stopping execution.\"" >> lkp.sh
++echo "                        exit 1" >> lkp.sh
++echo "                    fi" >> lkp.sh
++echo "                fi" >> lkp.sh
++echo "                ;;" >> lkp.sh
++echo "            2)" >> lkp.sh
++echo "                if [[ \"\${test_cases[\$i]}\" == *\"ebizzy\"* ]]; then" >> lkp.sh
++echo "                    echo \"Running: \${test_cases[\$i]}\"" >> lkp.sh
++echo "                    \${test_cases[\$i]}" >> lkp.sh
++echo "                    if [ \$? -eq 0 ]; then" >> lkp.sh
++echo "                        echo \"\${test_cases[\$i]}\" > \"\$STATE_FILE\"" >> lkp.sh
++echo "                    else" >> lkp.sh
++echo "                        echo \"Test failed, stopping execution.\"" >> lkp.sh
++echo "                        exit 1" >> lkp.sh
++echo "                    fi" >> lkp.sh
++echo "                fi" >> lkp.sh
++echo "                ;;" >> lkp.sh
++echo "            3)" >> lkp.sh
++echo "                if [[ \"\${test_cases[\$i]}\" == *\"unixbench\"* ]]; then" >> lkp.sh
++echo "                    echo \"Running: \${test_cases[\$i]}\"" >> lkp.sh
++echo "                    \${test_cases[\$i]}" >> lkp.sh
++echo "                    if [ \$? -eq 0 ]; then" >> lkp.sh
++echo "                        echo \"\${test_cases[\$i]}\" > \"\$STATE_FILE\"" >> lkp.sh
++echo "                    else" >> lkp.sh
++echo "                        echo \"Test failed, stopping execution.\"" >> lkp.sh
++echo "                        exit 1" >> lkp.sh
++echo "                    fi" >> lkp.sh
++echo "                fi" >> lkp.sh
++echo "                ;;" >> lkp.sh
++echo "            4)" >> lkp.sh
++echo "                echo \"Running: \${test_cases[\$i]}\"" >> lkp.sh
++echo "                \${test_cases[\$i]}" >> lkp.sh
++echo "                if [ \$? -eq 0 ]; then" >> lkp.sh
++echo "                    echo \"\${test_cases[\$i]}\" > \"\$STATE_FILE\"" >> lkp.sh
++echo "                else" >> lkp.sh
++echo "                    echo \"Test failed, stopping execution.\"" >> lkp.sh
++echo "                    exit 1" >> lkp.sh
++echo "                fi" >> lkp.sh
++echo "                ;;" >> lkp.sh
++echo "        esac" >> lkp.sh
+ echo "    done" >> lkp.sh
+ echo "" >> lkp.sh
+ echo "    # Clean up the state file if all tests are completed" >> lkp.sh
+ echo "    rm -f \"\$STATE_FILE\"" >> lkp.sh
+ echo "}" >> lkp.sh
+ echo "" >> lkp.sh
+-echo "run_tests" >> lkp.sh
++echo "# Check if argument is provided" >> lkp.sh
++echo "if [ \$# -ne 1 ]; then" >> lkp.sh
++echo "    echo \"Usage: \$0 <test_type>\"" >> lkp.sh
++echo "    echo \"1: Run hackbench tests\"" >> lkp.sh
++echo "    echo \"2: Run ebizzy tests\"" >> lkp.sh
++echo "    echo \"3: Run unixbench tests\"" >> lkp.sh
++echo "    echo \"4: Run all tests\"" >> lkp.sh
++echo "    exit 1" >> lkp.sh
++echo "fi" >> lkp.sh
++echo "" >> lkp.sh
++echo "# Validate argument" >> lkp.sh
++echo "if [[ ! \$1 =~ ^[1-4]$ ]]; then" >> lkp.sh
++echo "    echo \"Invalid argument. Please use:\"" >> lkp.sh
++echo "    echo \"1 for hackbench tests\"" >> lkp.sh
++echo "    echo \"2 for ebizzy tests\"" >> lkp.sh
++echo "    echo \"3 for unixbench tests\"" >> lkp.sh
++echo "    echo \"4 for all tests\"" >> lkp.sh
++echo "    exit 1" >> lkp.sh
++echo "fi" >> lkp.sh
++echo "" >> lkp.sh
++echo "run_tests \$1" >> lkp.sh
+ 
+ temp_state=$(echo /var/lib/lkp-automation-data/state-files/main-state)
+ state_value=$((temp_state + 1))
+-- 
+2.43.0
+
