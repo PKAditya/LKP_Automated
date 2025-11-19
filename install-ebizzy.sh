@@ -3,7 +3,7 @@
 case=$1
 lkp_dir=$2
 lkp_cmd=$3
-echo "Initiating the hackbench $1 checks"
+echo "Initiating the ebizzy $1 checks"
 
 check_exit() {
     if [ -f "$STOP_FILE" ]; then
@@ -39,48 +39,49 @@ loading_animation() {
 	done
 }
 
-test_hackbench() {
-    echo "Testing hackbench..."
+test_ebizzy() {
     cd $lkp_dir/splits
-    if [[ -f hackbench-pipe-8-process-100%.yaml ]]; then
-        sed -i 's/iterations: 8/iterations: 1/g' hackbench-pipe-8-process-100%.yaml
+    if [[ -f ebizzy-10s-100x-200%.yaml ]]; then
+        sed -i 's/iterations: 100x/iterations: 1x/g' ebizzy-10s-100x-200%.yaml
         
     else
-        capture_error "hackbench test case split file not found"
+        capture_error "ebizzy test case split file not found"
     fi
 
     loading_animation &
     spinner_pid=$!
-    echo "Testing hackbench, please wait..."
-    lkp run hackbench-pipe-8-process-100%.yaml &> /dev/null
+    echo "Testing ebizzy, please wait..."
+    lkp run ebizzy-10s-100x-200%.yaml &> /dev/null
+    test_install_status=$?
     kill "$spinner_pid" > /dev/null 2>&1
     echo -e "\rDone, checking results...     "
-    if [[ $? -ne 0 ]]; then
-        sed -i 's/iterations: 1/iterations: 8/g' hackbench-pipe-8-process-100%.yaml
-        capture_error "hackbench is not in working state, need manual attention"
+    if [[ $test_install_status -ne 0 ]]; then
+        sed -i 's/iterations: 1x/iterations: 100x/g' ebizzy-10s-100x-200%.yaml
+        capture_error "ebizzy is not in working state, need manual attention"
     fi
-    echo "hackbench test case ran successfully"
-    sed -i 's/iterations: 1/iterations: 8/g' hackbench-pipe-8-process-100%.yaml
+    echo "ebizzy test case ran successfully"
+    sed -i 's/iterations: 1x/iterations: 100x/g' ebizzy-10s-100x-200%.yaml
 }
 
-install_hackbench() {
-    echo "Installing hackbench..."
+install_ebizzy() {
     cd $lkp_dir/splits
-    sed -i '73d;74d;83d;85d;86d;87d' $lkp_dir/splits/hackbench-pipe-8-process-100%.yaml
+    sed -i '72d;73d;82d;84d;85d;86d' $lkp_dir/splits/ebizzy-10s-100x-200%.yaml
     loading_animation &
     spinner_pid=$!
-    $lkp_cmd install $lkp_dir/splits/hackbench-pipe-8-process-100%.yaml &> /dev/null
+    echo "Installing ebizzy, please wait..."
+    $lkp_cmd install $lkp_dir/splits/ebizzy-10s-100x-200%.yaml &> /dev/null
+    install_status=$?
     kill "$spinner_pid" > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
-        capture_error "hackbench installation failed, Manual attention needed"
+    if [[ $install_status -ne 0 ]]; then
+        capture_error "ebizzy installation failed, Manual attention needed"
     fi
-    echo "hackbench installed successfully"
+    echo "ebizzy installed successfully"
 }
 
 if [[ $case == "test" ]]; then
-    test_hackbench
+    test_ebizzy
 elif [[ $case == "install" ]]; then
-    install_hackbench
+    install_ebizzy
 else
     echo "Invalid argument. Use 'test' or 'install'."
 

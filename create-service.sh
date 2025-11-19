@@ -1,6 +1,7 @@
 #!/bin/bash
 # loc is lkp_directory
 loc=$1 
+lkp_dir=$2
 
 # Define the script location
 LKP_SCRIPT="/var/lib/auto_lkp.sh"
@@ -35,14 +36,14 @@ EOF
 echo "test_cases=(" >> "$LKP_SCRIPT"
 
 # Collect test case files
-files=$(ls "$loc/lkp-tests/splits/")
+files=$(ls "$lkp_dir/splits/")
 file_array=($files)
 
 # Append test cases starting with 'h' first
 for test_case in "${file_array[@]}"
 do
     if [[ $test_case == h* ]]; then
-        echo "    \"lkp run $loc/lkp-tests/splits/$test_case\"" >> "$LKP_SCRIPT"
+        echo "    \"lkp run $lkp_dir/splits/$test_case\"" >> "$LKP_SCRIPT"
     fi
 done
 
@@ -50,7 +51,7 @@ done
 for test_case in "${file_array[@]}"
 do
     if [[ $test_case == e* ]]; then
-        echo "    \"lkp run $loc/lkp-tests/splits/$test_case\"" >> "$LKP_SCRIPT"
+        echo "    \"lkp run $lkp_dir/splits/$test_case\"" >> "$LKP_SCRIPT"
     fi
 done
 
@@ -58,7 +59,7 @@ done
 for test_case in "${file_array[@]}"
 do
     if [[ $test_case != h* && $test_case != e* ]]; then
-        echo "    \"lkp run $loc/lkp-tests/splits/$test_case\"" >> "$LKP_SCRIPT"
+        echo "    \"lkp run $lkp_dir/splits/$test_case\"" >> "$LKP_SCRIPT"
     fi
 done
 
@@ -209,7 +210,6 @@ chmod 777 "$LKP_SCRIPT"
 cd /etc/systemd/system/
 touch auto_lkp.service
 truncate -s 0 auto_lkp.service
-check_exit
 echo -e "[Unit]" >> auto_lkp.service
 echo -e "Description=LKP Tests Service" >> auto_lkp.service
 echo -e "After=network.target" >> auto_lkp.service
