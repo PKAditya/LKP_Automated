@@ -40,10 +40,9 @@ loading_animation() {
 }
 
 test_unixbench() {
-    echo "Testing unixbench..."
     cd $lkp_dir/splits
     if [[ -f unixbench-100%-300s-shell8.yaml ]]; then
-        sed -i 's/iterations: 8/iterations: 1/g' unixbench-100%-300s-shell8.yaml
+        echo "Found the unixbench test case split file"
         
     else
         capture_error "unixbench test case split file not found"
@@ -53,26 +52,25 @@ test_unixbench() {
     spinner_pid=$!
     echo "Testing unixbench, please wait..."
     lkp run unixbench-100%-300s-shell8.yaml &> /dev/null
+    test_install_status=$?
     kill "$spinner_pid" > /dev/null 2>&1
     echo -e "\rDone, checking results...     "
-    if [[ $? -ne 0 ]]; then
-        sed -i 's/iterations: 1/iterations: 8/g' unixbench-100%-300s-shell8.yaml
+    if [[ $test_install_status -ne 0 ]]; then
         capture_error "unixbench is not in working state, need manual attention"
     fi
     echo "unixbench test case ran successfully"
-    sed -i 's/iterations: 1/iterations: 8/g' unixbench-100%-300s-shell8.yaml
 }
 
 install_unixbench() {
-    echo "Installing unixbench..."
     cd $lkp_dir/splits
     sed -i '72d;73d;82d;84d;85d;86d' $lkp_dir/splits/unixbench-100%-300s-shell8.yaml
     loading_animation &
     spinner_pid=$!
     echo "Installing unixbench, please wait..."
-    $lkp_cmd install $lkp_dir/splits/unixbench-100%-300s-shell8.yaml
+    $lkp_cmd install $lkp_dir/splits/unixbench-100%-300s-shell8.yaml &> /dev/null
+    install_status=$?
     kill "$spinner_pid" > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
+    if [[ $install_status -ne 0 ]]; then
         capture_error "unixbench installation failed, Manual attention needed"
     fi
     echo "unixbench installed successfully"

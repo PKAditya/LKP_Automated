@@ -1,10 +1,6 @@
 #!/bin/bash
 
-#Checking the distro name
-distro_type=$(cat /etc/os-release | grep -i pretty | sed 's/PRETTY_NAME=//')
-echo "--------------------------------------------"
-echo "Detected Distro: $distro_type"
-echo "--------------------------------------------"
+STOP_FILE="/tmp/stop_lkp_script"
 
 check_exit() {
     if [ -f "$STOP_FILE" ]; then
@@ -13,8 +9,18 @@ check_exit() {
     fi
 }
 
+trap "echo 'Caught SIGINT. Exiting...'; exit 0" SIGINT
+
+#Checking the distro name
+distro_type=$(cat /etc/os-release | grep -i pretty | sed 's/PRETTY_NAME=//')
+echo "--------------------------------------------"
+echo "Detected Distro: $distro_type"
+echo "--------------------------------------------"
+
 capture_error() {
 	echo "ERROR: $1"
+	# skip the first argument printing as its already printed in echo(using shift command)
+	shift
 	for arg in "$@"; do
 		echo "$arg"
 	done
@@ -26,6 +32,17 @@ capture_warn() {
         for arg in "$@"; do
                 echo "$arg"
         done
+}
+
+loading_animation() {
+    local delay=0.1
+    local spinstr='|/-\'
+    while :; do
+	    for ((i=0; i<${#spinstr}; i++)); do
+	        printf "\r%s" "${spinstr:$i:1}"
+	        sleep $delay
+	    done
+	done
 }
 
 #finding the package manager available on the system
@@ -54,7 +71,7 @@ check_package_manager
 echo "Detected Package Manager: $installer"
 echo "--------------------------------------------"
 
-pkgs_list=(git wget make gcc time perf* tar rubygems-devel ruby-devel rubygem-psych gcc-c++ cmake automake autoconf bsdtar glibc-static turbojpeg slang-devel libunwind-devel libcap-devel libbabeltrace numactl-devel libbabeltrace-devel python3-devel libcap-devel libcurl-minimal java-17-openjdk fakeroot openssl-devel openssl libcurl libcurl-devel patch bison elfutils-libelf-devel elfutils-devel libX11-devel systemtap-sdt-devel perl-ExtUtils-Embed perl-core perl-FindBin mesa-libGL-devel libXext-devel libcapstone-devel capstone-devel libdw-dev systemtap-sdt-dev libperl-dev clang clang-devel libpfm libpfm-devel perl-IPC-Run libxslt-devel llvm-devel)
+pkgs_list=(git wget make gcc time perf* tar rubygems-devel ruby-devel rubygem-psych gcc-c++ cmake automake autoconf bsdtar glibc-static turbojpeg slang-devel libunwind-devel libcap-devel libbabeltrace numactl-devel flex libbabeltrace-devel python3-devel libcap-devel libcurl-minimal java-17-openjdk fakeroot openssl-devel openssl libcurl libcurl-devel patch bison elfutils-libelf-devel elfutils-devel libX11-devel systemtap-sdt-devel perl-ExtUtils-Embed perl-core perl-FindBin mesa-libGL-devel libXext-devel libcapstone-devel capstone-devel libdw-dev systemtap-sdt-dev libperl-dev clang clang-devel libpfm libpfm-devel perl-IPC-Run libxslt-devel llvm-devel)
 
 gems_list=(text-table "activesupport -v 6.0.0" ruby bigdecimal json racc parser tins term-ansicolor rubocop-ast rubocop flex "bundler -v 2.5.19" git)
 
@@ -114,15 +131,45 @@ print_status() {
     echo " "
 }
 
+# for pkg in "${pkgs_list[@]}"; do
+# 	if ! is_installed "$pkg"; then
+# 		if ! "$installer" install -y "$pkg"; then
+# 			failed_pkgs+=("$pkg")
+# 		else
+# 			echo "Successfully installed the $pkg"
+# 		fi
+# 	else
+# 		echo "$pkg already installed on the system, skipping......"
+# 	fi
+# done
+
+# for gem in "${gems_list[@]}"; do
+#     if ! gem list -i $(echo "$gem" | awk '{print $1}') &> /dev/null; then
+#         if ! gem install $gem; then
+#             failed_gems+=("$gem")
+#         else
+#             echo "Successfully installed $gem"
+#         fi
+#     else
+#         echo "Gem $gem already installed, skipping..."
+#     fi
+# done
+
+
 for pkg in "${pkgs_list[@]}"; do
 	if ! is_installed "$pkg"; then
-		check_exit
-		if ! "$installer" install -y "$pkg"; then
-			check_exit
-			failed_pkgs+=("$pkg")
-		else
-			echo "Successfully installed the $pkg"
-		fi
+        loading_animation &
+        spinner_pid=$!
+	    echo "Installing $pkg, please wait..."
+	    "$installer" install -y "$pkg" &> /dev/null
+	    install_status=$?
+	    kill "$spinner_pid" > /dev/null 2>&1
+        if [[ $install_status -ne 0 ]]; then
+            failed_pkgs+=("$pkg")
+            echo "Failed to install $pkg"
+        else
+            echo "Successfully installed the $pkg"
+        fi
 	else
 		echo "$pkg already installed on the system, skipping......"
 	fi
@@ -130,10 +177,15 @@ done
 
 for gem in "${gems_list[@]}"; do
     if ! gem list -i $(echo "$gem" | awk '{print $1}') &> /dev/null; then
-	check_exit
-        if ! gem install $gem; then
-	    check_exit
+        loading_animation &
+        spinner_pid=$!
+	    echo "Installing $pkg, please wait..."
+	    gem install "$gem" &> /dev/null
+	    install_status=$?
+	    kill "$spinner_pid" > /dev/null 2>&1
+        if [[ $install_status -ne 0 ]]; then
             failed_gems+=("$gem")
+            echo "Failed to install $gem"
         else
             echo "Successfully installed $gem"
         fi
@@ -151,4 +203,10 @@ if [ ${#failed_pkgs[@]} -eq 0 ]; then
 else
 	echo " "
 	capture_warn "Failed to find packages required for lkp installation" "Packages failed to install: ${failed_pkgs[@]}"
+fi
+
+
+if grep -q -i "euler" /etc/os-release; then
+		sudo $installer remove -y rubygem-bundler
+        sudo gem install bundler -v 2.3.26
 fi

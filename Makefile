@@ -3,7 +3,7 @@
 # Target to set executable permissions
 all:
 	chmod 777 *
-	./version2/run.sh
+	./run.sh
 
 # Clean target (optional, if you want to add a clean-up function)
 clean:
@@ -11,4 +11,3 @@ clean:
 
 # Phony targets
 .PHONY: all clean
-
