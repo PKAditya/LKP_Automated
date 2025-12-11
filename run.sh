@@ -10,7 +10,7 @@ pip_command=""
 STOP_FILE="/tmp/stop_lkp_script"
 lkp_install_status="-1"
 test_install_status="-1"
-installation_type=""
+installation_type="2"  # Default to type 2 (only install LKP)
 
 # Function to check if the stop file exists
 check_exit() {
@@ -220,22 +220,22 @@ echo "Please select the installation type:"
 echo "    1. Install and run the lkp test cases automatically (Hackbench, Ebizzy, Unixbench)"
 echo "    2. Only Install LKP, I will run the test cases manually later (Recommended for Hosts)"
 
-while true; do
-    read -p "Enter your choice (1 or 2): " installation_choice
+# while true; do
+#     read -p "Enter your choice (1 or 2): " installation_choice
 
-    if [[ $installation_choice == "1" ]]; then
-        installation_type="1"
-		echo "NOTE: This script will run the lkp test cases automatically after installation."
-		echo "NOTE: This script will rerun when you reboot the system."
-		echo "To disable this automatic run or stop the current run please use the command : sudo systemctl stop lkp.service"
-        break
-    elif [[ $installation_choice == "2" ]]; then
-        installation_type="2"
-        break
-    else
-        echo "Invalid choice. Please enter either 1 or 2."
-    fi
-done
+#     if [[ $installation_choice == "1" ]]; then
+#         installation_type="1"
+# 		echo "NOTE: This script will run the lkp test cases automatically after installation."
+# 		echo "NOTE: This script will rerun when you reboot the system."
+# 		echo "To disable this automatic run or stop the current run please use the command : sudo systemctl stop lkp.service"
+#         break
+#     elif [[ $installation_choice == "2" ]]; then
+#         installation_type="2"
+#         break
+#     else
+#         echo "Invalid choice. Please enter either 1 or 2."
+#     fi
+# done
 
 check_package_existence git
 check_package_existence make
