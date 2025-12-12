@@ -245,6 +245,12 @@ clone_lkp
 # check wheather the required paths are present in sudoers file or not, if not present add them
 $loc/edit-sudoers.sh $user
 
+#change ulimit values if the system is a anolis system
+if grep -q -i "anolis" /etc/os-release; then
+	echo "Anolis OS detected, changing the ulimit values"
+	$loc/change-ulimit.sh
+fi
+
 if command -v lkp; then
 	echo "LKP Found on the system in location: $(which lkp)"
 	echo "Checking the working of lkp......"
