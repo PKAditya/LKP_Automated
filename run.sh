@@ -102,20 +102,6 @@ clone_lkp() {
     cd $loc
 }
 
-test_lkp() {
-	lkp_cmd=$(which lkp)
-	cd $lkp_dir
-	
-	mkdir -p $lkp_dir/splits
-	cd $lkp_dir/splits
-
-	if $lkp_cmd split-job $lkp_dir/jobs/hackbench.yaml &> /dev/null; then
-		lkp_install_status="0"
-		rm -rf $lkp_dir/splits/*
-	fi	
-	
-}
-
 support_addition() {
     cp $lkp_dir/distro/installer/centos $lkp_dir/distro/installer/opencloudos
     cp $lkp_dir/distro/installer/centos $lkp_dir/distro/installer/anolis
@@ -140,6 +126,25 @@ loading_animation() {
 	done
 }
 
+test_lkp() {
+	lkp_cmd=$(which lkp)
+	cd $lkp_dir
+	
+	mkdir -p $lkp_dir/splits
+	cd $lkp_dir/splits
+
+	if $lkp_cmd split-job $lkp_dir/jobs/hackbench.yaml &> /dev/null; then
+		# if split-job is successful, lkp is in working condition
+		lkp_install_status="0"
+		# if the splits directory is empty, lkp_install_status will be reverted back to -1 for later checks
+		if [ -z "$(ls $lkp_dir/splits)" ]; then
+			lkp_install_status="-1"
+		else
+			# cleaning up the splits directory for further use
+			rm -rf $lkp_dir/splits/*
+		fi
+	fi
+}
 install_lkp() {
 	echo "Initiating the lkp installation"
 	$loc/lkp-deps.sh
